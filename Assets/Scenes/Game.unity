@@ -4744,8 +4744,8 @@ MonoBehaviour:
   loginSuccessMessage: <b>Done!</b><br>You can close this window now!.
   loginFailMessage: <b>Oops!</b><br>Something bad happened. Please restart de game
     and try again.
-  clientId: YOUR_CLIENT_ID_HERE
-  portList: 39300000d20400003a300000
+  clientId: izz785mgg9ri3llkh3m035xt36m12w
+  portList: b31500009a1f0000891f0000
 --- !u!4 &1634069027
 Transform:
   m_ObjectHideFlags: 0
