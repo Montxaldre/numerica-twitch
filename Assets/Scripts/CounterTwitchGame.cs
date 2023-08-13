@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using TMPro;
 using TwitchAPI;
 using TwitchChat;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class CounterTwitchGame : MonoBehaviour
 {
@@ -25,6 +30,19 @@ public class CounterTwitchGame : MonoBehaviour
     private string nextPotentialVIP;
 
     [SerializeField] private GameObject startingCanvas;
+
+
+    Dictionary<char, int> romanValues = new Dictionary<char, int>
+    {
+        {'I', 1},
+        {'V', 5},
+        {'X', 10},
+        {'L', 50},
+        {'C', 100},
+        {'D', 500},
+        {'M', 1000}
+    };
+
 
     private void Start()
     {
@@ -50,20 +68,78 @@ public class CounterTwitchGame : MonoBehaviour
 
     private void OnTwitchMessageReceived(Chatter chatter)
     {
-        if (!int.TryParse(chatter.message, out int response)) return;
+        string romanNumeral = chatter.message.ToUpper(); // Convertir a mayúsculas para manejo uniforme
 
         string displayName = chatter.IsDisplayNameFontSafe() ? chatter.tags.displayName : chatter.login;
 
         if (lastUsername.Equals(displayName)) return;
 
-        if (response == currentScore + 1) HandleCorrectResponse(displayName, chatter);
-        else HandleIncorrectResponse(displayName, chatter);
+        if (!UseRomanLetters(romanNumeral)) return;
+
+        if (!IsValidRomanNumeral(romanNumeral)) {
+
+            HandleIncorrectResponse(displayName, chatter);
+            
+        }else
+        { 
+            int numeralValue = ConvertRomanToInteger(romanNumeral);
+        
+
+            if (numeralValue == currentScore + 1)
+            {
+                HandleCorrectResponse(displayName, chatter, romanNumeral);
+            }
+            else
+            {
+                HandleIncorrectResponse(displayName, chatter);
+            }
+        }
     }
 
-    private void HandleCorrectResponse(string displayName, Chatter chatter)
+    private bool UseRomanLetters(string romanNumeral)
+    {
+        string pattern = "^[IVXLCDM]+$";
+
+        return Regex.IsMatch(romanNumeral, pattern);
+    }
+
+    private bool IsValidRomanNumeral(string numeral)
+    {
+        string pattern = "^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"; // Expresión regular para validar los caracteres romanos        
+        
+        return Regex.IsMatch(numeral, pattern);
+    }
+
+
+    
+    private int ConvertRomanToInteger(string numeral)
+    {
+        int result = 0;
+        int prevValue = 0;
+
+        for (int i = numeral.Length - 1; i >= 0; i--)
+        {
+            int currentValue = romanValues[numeral[i]];
+
+            if (currentValue < prevValue)
+            {
+                result -= currentValue;
+            }
+            else
+            {
+                result += currentValue;
+            }
+
+            prevValue = currentValue;
+        }
+
+        return result;
+    }
+
+    private void HandleCorrectResponse(string displayName, Chatter chatter, string romanNumeral)
     {
         currentScore++;
-        UpdateCurrentScoreUI(displayName, currentScore.ToString());
+        UpdateCurrentScoreUI(displayName, romanNumeral);
 
         lastUsername = displayName;
         if (currentScore > currentMaxScore)
@@ -220,4 +296,5 @@ public class CounterTwitchGame : MonoBehaviour
         currentScore = 0;
         currentScoreTMP.SetText(currentScore.ToString());
     }
+
 }
