@@ -56,7 +56,7 @@ public class CounterTwitchGame : MonoBehaviour
         lastUserIdVIPGranted = PlayerPrefs.GetString(lastUserIdVIPGrantedKey, string.Empty);
 
         UpdateMaxScoreUI();
-        UpdateCurrentScoreUI(lastUsername, currentScore.ToString());
+        UpdateCurrentScoreUI(lastUsername, currentScore.ToString().ToLower());
         ResetGame();
     }
 
@@ -68,7 +68,7 @@ public class CounterTwitchGame : MonoBehaviour
 
     private void OnTwitchMessageReceived(Chatter chatter)
     {
-        string romanNumeral = chatter.message.ToUpper(); // Convertir a mayúsculas para manejo uniforme
+        string romanNumeral = chatter.message.ToUpper();
 
         string displayName = chatter.IsDisplayNameFontSafe() ? chatter.tags.displayName : chatter.login;
 
@@ -76,14 +76,16 @@ public class CounterTwitchGame : MonoBehaviour
 
         if (!UseRomanLetters(romanNumeral)) return;
 
-        if (!IsValidRomanNumeral(romanNumeral)) {
+        if (!IsValidRomanNumeral(romanNumeral))
+        {
 
             HandleIncorrectResponse(displayName, chatter);
-            
-        }else
-        { 
+
+        }
+        else
+        {
             int numeralValue = ConvertRomanToInteger(romanNumeral);
-        
+
 
             if (numeralValue == currentScore + 1)
             {
@@ -105,13 +107,13 @@ public class CounterTwitchGame : MonoBehaviour
 
     private bool IsValidRomanNumeral(string numeral)
     {
-        string pattern = "^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"; // Expresión regular para validar los caracteres romanos        
-        
+        string pattern = "^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";        
+
         return Regex.IsMatch(numeral, pattern);
     }
 
 
-    
+
     private int ConvertRomanToInteger(string numeral)
     {
         int result = 0;
@@ -139,7 +141,7 @@ public class CounterTwitchGame : MonoBehaviour
     private void HandleCorrectResponse(string displayName, Chatter chatter, string romanNumeral)
     {
         currentScore++;
-        UpdateCurrentScoreUI(displayName, romanNumeral);
+        UpdateCurrentScoreUI(displayName, romanNumeral.ToLower());
 
         lastUsername = displayName;
         if (currentScore > currentMaxScore)
@@ -269,7 +271,8 @@ public class CounterTwitchGame : MonoBehaviour
 
     private void UpdateMaxScoreUI()
     {
-        string scoreText = $"HIGH SCORE: {currentMaxScore}\nby <color=#00EAC0>";
+        string romanMaxScore = ConvertToRomanNumerals(currentMaxScore);
+        string scoreText = $"HIGH SCORE: {romanMaxScore. ToLower()} \nby <color=#00EAC0>";
 
         if (TwitchOAuth.Instance.IsVipEnabled() &&
             (!string.IsNullOrEmpty(nextPotentialVIP) || !string.IsNullOrEmpty(lastUserIdVIPGranted)))
@@ -284,17 +287,37 @@ public class CounterTwitchGame : MonoBehaviour
         maxScoreTMP.SetText(scoreText);
     }
 
+    private string ConvertToRomanNumerals(int value)
+    {
+        if (value < 1)
+        {
+            return "N";
+        }
+
+        string[] thousands = { "", "M", "MM", "MMM" };
+        string[] hundreds = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
+        string[] tens = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
+        string[] ones = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
+
+        string romanThousands = thousands[value / 1000];
+        string romanHundreds = hundreds[(value % 1000) / 100];
+        string romanTens = tens[(value % 100) / 10];
+        string romanOnes = ones[value % 10];
+
+        return romanThousands + romanHundreds + romanTens + romanOnes;
+    }
+
     private void UpdateCurrentScoreUI(string username, string score)
     {
         usernameTMP.SetText(username);
-        currentScoreTMP.SetText(score);
+        currentScoreTMP.SetText(score.Replace("0", "N"));
     }
 
     private void ResetGame()
     {
         lastUsername = "";
         currentScore = 0;
-        currentScoreTMP.SetText(currentScore.ToString());
+        currentScoreTMP.SetText("N");
     }
 
 }
