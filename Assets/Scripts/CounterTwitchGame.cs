@@ -245,7 +245,7 @@ public class CounterTwitchGame : MonoBehaviour
 
     private void DisplayShameMessage(string displayName)
     {
-        usernameTMP.SetText($"<color=#00EAC0>Shame on </color>{displayName}<color=#00EAC0>!</color>");
+        usernameTMP.SetText($"Vergoniam in  {displayName}!");
     }
 
     private void OnChannelJoined()
@@ -272,7 +272,7 @@ public class CounterTwitchGame : MonoBehaviour
     private void UpdateMaxScoreUI()
     {
         string romanMaxScore = ConvertToRomanNumerals(currentMaxScore);
-        string scoreText = $"HIGH SCORE: {romanMaxScore. ToLower()} \nby <color=#00EAC0>";
+        string scoreText = $"maxima puntatio: { romanMaxScore. ToLower()} \nby ";
 
         if (TwitchOAuth.Instance.IsVipEnabled() &&
             (!string.IsNullOrEmpty(nextPotentialVIP) || !string.IsNullOrEmpty(lastUserIdVIPGranted)))
